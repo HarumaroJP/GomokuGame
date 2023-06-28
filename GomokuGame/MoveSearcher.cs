@@ -101,7 +101,7 @@
             {
                 foreach (SearchDirectionEvent dirEvent in directions)
                 {
-                    if (IsValidRange(y, x, link.Pattern.Length, dirEvent))
+                    if (!IsValidRange(y, x, link.Pattern.Length, dirEvent))
                         continue;
 
                     Span<int> range = buffer.Slice(0, link.Pattern.Length);
@@ -134,8 +134,6 @@
         bool IsValidRange(int y, int x, int length, SearchDirectionEvent searchEvent)
         {
             (int y, int x) last = searchEvent(y, x, length - 1);
-
-            Console.WriteLine($"last = {last}");
 
             return board.IsValidRange(last.y, last.x);
         }
