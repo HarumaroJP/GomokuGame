@@ -1,4 +1,6 @@
-﻿namespace Game
+﻿//MSゴシック以外のフォントで動かすと表示がおかしくなるかもしれないです。
+
+namespace Game
 {
     public enum Stone : byte
     {
@@ -34,7 +36,7 @@
 
         private void Refresh()
         {
-            Console.Clear();
+            //Console.Clear();
             boardWriter.Write();
 
             if (showHistory)

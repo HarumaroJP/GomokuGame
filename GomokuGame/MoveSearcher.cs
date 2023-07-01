@@ -1,7 +1,4 @@
-﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-
-namespace Game
+﻿namespace Game
 {
     public class MoveSearcher
     {
@@ -163,7 +160,7 @@ namespace Game
             return board.IsValidRange(last.y, last.x);
         }
 
-        private readonly ref struct SearchResult
+        private readonly struct SearchResult
         {
             public readonly int Score;
             public readonly (int y, int x) Position;

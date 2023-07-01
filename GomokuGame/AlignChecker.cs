@@ -1,6 +1,4 @@
-﻿using Game;
-
-namespace Game
+﻿namespace Game
 {
     /// <summary>
     /// 並びの判定クラス

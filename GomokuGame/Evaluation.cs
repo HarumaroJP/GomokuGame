@@ -1,17 +1,25 @@
-﻿using System.Text.Json.Serialization;
-
-namespace Game
+﻿namespace Game
 {
     public class Evaluation
     {
+        //評価パターン
         // 1: None
         // 2: White
         // 3: Black
         public static readonly Link[] Links = new[]
         {
-            Link.Define(new byte[] { 3, 2, 2, 2, 2 }, 400),
-            Link.Define(new byte[] { 3, 2, 2, 2 }, 100),
+            //守
+            Link.Define(new byte[] { 3, 2, 2, 2, 2 }, 500),
+            Link.Define(new byte[] { 3, 2, 2, 1, 2 }, 1000),
+            Link.Define(new byte[] { 3, 2, 1, 2, 2 }, 1000),
+            Link.Define(new byte[] { 3, 2, 2, 2 }, 200),
             Link.Define(new byte[] { 3, 2, 2 }, 50),
+
+            //攻
+            Link.Define(new byte[] { 3, 3, 3, 3, 3 }, 400),
+            Link.Define(new byte[] { 3, 3, 3, 3, 1 }, 200),
+            Link.Define(new byte[] { 3, 3, 3, 1 }, 80),
+            Link.Define(new byte[] { 3, 3, 1 }, 70),
         };
 
         private static readonly (int y, int x)[] directions = { (-1, 0), (0, -1), (1, 0), (0, 1) };
