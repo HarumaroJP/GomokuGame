@@ -1,4 +1,7 @@
-﻿namespace Game
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+
+namespace Game
 {
     public class MoveSearcher
     {
@@ -6,126 +9,149 @@
 
         private readonly Board board;
         private readonly AlignChecker alignChecker;
-        private readonly int maxDepth = 1;
-
-        private bool isPlayerTurn;
-        private SearchDirectionEvent[] directions;
-        private (int y, int x)[] searchPositions;
-        private int[] searchBuffer;
+        private readonly SearchDirectionEvent[] directions;
+        private readonly (int y, int x)[] searchPositions;
 
         public MoveSearcher(Board board)
         {
             this.board = board;
             alignChecker = new AlignChecker(board);
-            searchBuffer = new int[board.Size];
             searchPositions = Evaluation.ProducePositions(board.Size).ToArray();
 
+            //探索方向を登録
             directions = new SearchDirectionEvent[]
             {
                 (y, x, delta) => (y, x + delta),
+                (y, x, delta) => (y, x - delta),
                 (y, x, delta) => (y + delta, x),
+                (y, x, delta) => (y - delta, x),
                 (y, x, delta) => (y + delta, x + delta),
+                (y, x, delta) => (y - delta, x + delta),
+                (y, x, delta) => (y - delta, x - delta),
+                (y, x, delta) => (y + delta, x - delta),
             };
         }
 
+        /// <summary>
+        /// 最適な手を返します。
+        /// </summary>
+        /// <returns>手の座標</returns>
         public (int y, int x) Search()
         {
-            int maxScore = 0;
-            (int y, int x) bestPos = (0, 0);
+            SearchResult result = AlphaBetaSearch((0, 0), 3, int.MinValue, int.MaxValue, true);
 
-            foreach ((int y, int x) pos in searchPositions)
-            {
-                int score = MiniMax(1, 0);
-
-                if (score > maxScore)
-                {
-                    maxScore = score;
-                    bestPos = pos;
-                }
-            }
-
-            Console.WriteLine($"bestPos = {bestPos}");
-
-            return bestPos;
+            return result.Position;
         }
 
-        int MiniMax(int depth, int maxScore)
+        //alpha-beta法で探索を行う関数
+        SearchResult AlphaBetaSearch((int y, int x) setPos, int depth, int alpha, int beta, bool isMaxTurn)
         {
-            for (int i = 0; i < board.Size; i++)
+            if (depth == 0)
             {
-                for (int j = 0; j < board.Size; j++)
+                int score = Evaluate();
+                return new SearchResult(score, setPos);
+            }
+
+            SearchResult best = new SearchResult(isMaxTurn ? int.MinValue : int.MaxValue, (0, 0));
+
+            foreach ((int y, int x) p in searchPositions)
+            {
+                //すでに設置されていたら探索しない
+                if (board.GetUnsafe(p.y, p.x) != Stone.None)
+                    continue;
+
+                board.Set(p.y, p.x, isMaxTurn ? Stone.Black : Stone.White);
+
+                //揃っていたら探索終了
+                if (alignChecker.IsAlign(p.y, p.x, 5))
                 {
-                    Stone stone = board.GetUnsafe(i, j);
+                    board.Set(p.y, p.x, Stone.None);
+                    return new SearchResult(isMaxTurn ? int.MinValue : int.MaxValue, p);
+                }
 
-                    if (stone != Stone.None)
-                        continue;
+                SearchResult result = AlphaBetaSearch(p, depth - 1, alpha, beta, !isMaxTurn);
+                board.Set(p.y, p.x, Stone.None);
 
-                    board.Set(i, j, Stone.Black);
+                if (isMaxTurn)
+                {
+                    //βカット
+                    if (beta <= result.Score)
+                        return result;
 
-                    int score = EvaluateLinks(i, j);
-
-                    if (score > maxScore)
+                    if (result.Score > best.Score)
                     {
-                        maxScore = score;
+                        best = result;
+                        alpha = result.Score;
                     }
+                }
+                else
+                {
+                    //αカット
+                    if (alpha >= result.Score)
+                        return result;
 
-                    if (alignChecker.IsAlign(i, j, 5))
+                    if (result.Score < best.Score)
                     {
-                        score += Evaluation.AlignScore;
-                        maxScore = score;
-                        continue;
-                    }
-
-                    board.Set(i, j, Stone.None);
-
-                    if (depth > maxDepth)
-                        continue;
-
-                    int nextScore = MiniMax(depth + 1, maxScore);
-                    if (nextScore > maxScore)
-                    {
-                        maxScore = score;
+                        best = result;
+                        beta = result.Score;
                     }
                 }
             }
 
-            return maxScore;
+            return best;
+        }
+
+        //評価関数
+        int Evaluate()
+        {
+            int bestScore = 0;
+
+            foreach ((int y, int x) p in searchPositions)
+            {
+                //指定位置から全方向への設置パターンを探索する
+                int score = EvaluateLinks(p.y, p.x);
+
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                }
+            }
+
+            return bestScore;
         }
 
         int EvaluateLinks(int y, int x)
         {
-            int additionalScore = 0;
-            Span<int> buffer = searchBuffer.AsSpan();
+            int totalScore = 0;
 
-            foreach (Link link in Evaluation.Links)
+            foreach (SearchDirectionEvent dir in directions)
             {
-                foreach (SearchDirectionEvent dirEvent in directions)
+                foreach (Link link in Evaluation.Links)
                 {
-                    if (!IsValidRange(y, x, link.Pattern.Length, dirEvent))
+                    //設置パターンが盤面外に出るようだったら飛ばす
+                    if (!IsValidRange(y, x, link.Pattern.Length, dir))
                         continue;
 
-                    Span<int> range = buffer.Slice(0, link.Pattern.Length);
-
-                    GetRange(range, y, x, dirEvent);
-
-                    if (!EqualLink(range, link.Pattern.AsSpan()))
+                    //パターンを満たしていなかったら飛ばす
+                    if (!HasPattern(y, x, link.Pattern, dir))
                         continue;
 
-                    additionalScore += link.Score;
+                    totalScore += link.Score;
                 }
             }
 
-            return additionalScore;
+            return totalScore;
         }
 
-        bool EqualLink(Span<int> a, Span<int> b)
+        bool HasPattern(int y, int x, byte[] pattern, SearchDirectionEvent searchEvent)
         {
-            for (int i = 0; i < a.Length; i++)
+            for (int i = 0; i < pattern.Length; i++)
             {
-                if (a[i] != b[i])
-                {
+                (int y, int x) pos = searchEvent(y, x, i);
+                bool isDifferent = pattern[i] != (byte)board.GetUnsafe(pos.y, pos.x);
+
+                if (isDifferent)
                     return false;
-                }
             }
 
             return true;
@@ -134,16 +160,18 @@
         bool IsValidRange(int y, int x, int length, SearchDirectionEvent searchEvent)
         {
             (int y, int x) last = searchEvent(y, x, length - 1);
-
             return board.IsValidRange(last.y, last.x);
         }
 
-        void GetRange(Span<int> range, int y, int x, SearchDirectionEvent searchEvent)
+        private readonly ref struct SearchResult
         {
-            for (int i = 0; i < range.Length; i++)
+            public readonly int Score;
+            public readonly (int y, int x) Position;
+
+            public SearchResult(int score, (int y, int x) position)
             {
-                (int y, int x) pos = searchEvent(y, x, i);
-                range[i] = (int)board.GetUnsafe(pos.y, pos.x);
+                Score = score;
+                Position = position;
             }
         }
     }
