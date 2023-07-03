@@ -1,11 +1,9 @@
-﻿using System.Text;
-
-namespace Game
+﻿namespace Game
 {
     /// <summary>
     /// 盤面情報の管理クラス
     /// </summary>
-    public class Board : IReadOnlyBoard
+    public class Board
     {
         public int Size { get; }
 
@@ -17,7 +15,7 @@ namespace Game
         {
             this.Size = size;
             fieldData = Enumerable.Range(0, size).Select(_ => new Stone[size].Select(_ => Stone.None).ToArray()).ToArray();
-            noneData = new List<int>(size);
+            noneData = new List<int>(size * size);
             rand = new Random();
 
             for (int i = 0; i < size; i++)
@@ -50,7 +48,7 @@ namespace Game
             return fieldData[y][x];
         }
 
-        public void Set(int x, int y, Stone stone)
+        public void Set(int y, int x, Stone stone)
         {
             fieldData[y][x] = stone;
 

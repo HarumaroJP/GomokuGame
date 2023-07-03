@@ -1,6 +1,4 @@
-﻿using Game;
-
-namespace Game
+﻿namespace Game
 {
     /// <summary>
     /// 並びの判定クラス
@@ -54,7 +52,8 @@ namespace Game
                 counter++;
             }
 
-            return counter >= checkCount; //指定の数以上並んでいるか
+            //指定の数以上並んでいるか
+            return counter >= checkCount;
         }
     }
 }

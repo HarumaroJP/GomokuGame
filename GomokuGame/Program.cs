@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Text;
-using Game;
+﻿using Game;
 
 
 internal class GomokuGame

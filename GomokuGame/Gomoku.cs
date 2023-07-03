@@ -1,6 +1,8 @@
-﻿namespace Game
+﻿//MSゴシック以外のフォントで動かすと表示がおかしくなるかもしれないです。
+
+namespace Game
 {
-    public enum Stone
+    public enum Stone : byte
     {
         Invalid,
         None,
@@ -134,7 +136,7 @@
 
                     if (board.IsValidRange(fieldY, fieldX) && board.Get(fieldY, fieldX) == Stone.None)
                     {
-                        board.Set(fieldX, fieldY, Stone.White); //盤面に石をセット
+                        board.Set(fieldY, fieldX, Stone.White); //盤面に石をセット
                         RecordInput("Player", fieldX, fieldY); //入力履歴を記録する
                         return (fieldY, fieldX);
                     }
@@ -149,7 +151,7 @@
         (int y, int x) TurnCOM()
         {
             (int y, int x) nonePos = moveSearcher.Search(); //ランダムな空所を取得
-            board.Set(nonePos.x, nonePos.y, Stone.Black); //盤面に石をセット
+            board.Set(nonePos.y, nonePos.x, Stone.Black); //盤面に石をセット
             RecordInput("COM", nonePos.x, nonePos.y); //入力履歴を記録する
 
             return nonePos;

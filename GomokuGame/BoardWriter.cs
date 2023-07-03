@@ -37,7 +37,7 @@ namespace Game
                 for (int j = 0; j < size; j++)
                 {
                     Stone v = board.Get(i, j);
-                    builder.Append($" {GetStoneChar(v)} ");
+                    builder.Append($" {GetStoneChar(v)}");
                     builder.Append('┃');
                 }
 
@@ -75,10 +75,10 @@ namespace Game
                 case Stone.Black:
                     return "○";
                 case Stone.None:
-                    return " ";
+                    return "  ";
 
                 default:
-                    return " ";
+                    return "  ";
             }
         }
     }
