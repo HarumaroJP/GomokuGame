@@ -1,4 +1,6 @@
-﻿namespace Game
+﻿using System.Diagnostics;
+
+namespace Game
 {
     public class MoveSearcher
     {
@@ -29,13 +31,20 @@
             };
         }
 
+        private List<long> secs = new List<long>();
+
         /// <summary>
         /// 最適な手を返します。
         /// </summary>
         /// <returns>手の座標</returns>
         public (int y, int x) Search()
         {
+            Stopwatch sw = Stopwatch.StartNew();
             SearchResult result = AlphaBetaSearch((0, 0), 3, int.MinValue, int.MaxValue, true);
+            sw.Stop();
+
+            secs.Add(sw.ElapsedMilliseconds);
+            Console.WriteLine($"ave = {secs.Average()}");
 
             return result.Position;
         }
@@ -103,13 +112,13 @@
         {
             int bestScore = 0;
 
-            foreach ((int y, int x) p in searchPositions)
+            Parallel.ForEach(searchPositions, p =>
             {
                 //指定位置から全方向への設置パターンを探索する
                 int score = EvaluateLinks(p.y, p.x);
 
                 bestScore += score;
-            }
+            });
 
             return bestScore;
         }
