@@ -31,6 +31,8 @@ namespace Game
 
         public void Start()
         {
+            Console.WriteLine("遊び方: ");
+
             CommandLoop();
         }
 
@@ -139,8 +141,7 @@ namespace Game
                         board.Set(fieldY, fieldX, Stone.White); //盤面に石をセット
                         RecordInput("Player", fieldX, fieldY); //入力履歴を記録する
                         return (fieldY, fieldX);
-                    }
-                    else
+                    } else
                     {
                         Console.WriteLine("置くことができないマスです");
                     }

@@ -9,15 +9,15 @@
         public static readonly Link[] Links = new[]
         {
             //守
-            Link.Define(new byte[] { 3, 2, 2, 2, 2 }, 1000),
-            Link.Define(new byte[] { 3, 2, 2, 1, 2 }, 800),
-            Link.Define(new byte[] { 3, 2, 1, 2, 2 }, 800),
-            Link.Define(new byte[] { 3, 2, 2, 2 }, 900),
+            Link.Define(new byte[] { 1, 2, 2, 2, 2 }, -2000),
+            Link.Define(new byte[] { 1, 2, 2, 1, 2 }, -800),
+            Link.Define(new byte[] { 1, 2, 1, 2, 2 }, -800),
+            Link.Define(new byte[] { 1, 2, 2, 2 }, -400),
 
             //攻
-            Link.Define(new byte[] { 3, 3, 3, 3 }, 900),
-            Link.Define(new byte[] { 3, 3, 3 }, 300),
-            Link.Define(new byte[] { 3, 3 }, 120)
+          //  Link.Define(new byte[] { 3, 3, 3, 3 }, 900),
+          //  Link.Define(new byte[] { 3, 3, 3 }, 300),
+          //  Link.Define(new byte[] { 3, 3 }, 120)
         };
 
         private static readonly (int y, int x)[] directions = { (-1, 0), (0, -1), (1, 0), (0, 1) };

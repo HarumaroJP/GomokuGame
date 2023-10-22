@@ -60,7 +60,7 @@ namespace Game
 
             SearchResult best = new SearchResult(isMaxTurn ? int.MinValue : int.MaxValue, (0, 0));
 
-            foreach ((int y, int x) p in searchPositions)
+            foreach ((int y, int x) p in searchPositions.AsSpan())
             {
                 //すでに設置されていたら探索しない
                 if (board.GetUnsafe(p.y, p.x) != Stone.None)
@@ -82,23 +82,22 @@ namespace Game
                 {
                     //βカット
                     if (beta <= result.Score)
-                        return result;
+                        return new SearchResult(result.Score, p);
 
                     if (result.Score > best.Score)
                     {
-                        best = result;
+                        best = new SearchResult(result.Score, p);
                         alpha = result.Score;
                     }
-                }
-                else
+                } else
                 {
                     //αカット
                     if (alpha >= result.Score)
-                        return result;
+                        return new SearchResult(result.Score, p);
 
                     if (result.Score < best.Score)
                     {
-                        best = result;
+                        best = new SearchResult(result.Score, p);
                         beta = result.Score;
                     }
                 }
@@ -112,8 +111,7 @@ namespace Game
         {
             int bestScore = 0;
 
-            Parallel.ForEach(searchPositions, p =>
-            {
+            Parallel.ForEach(searchPositions, p => {
                 //指定位置から全方向への設置パターンを探索する
                 int score = EvaluateLinks(p.y, p.x);
 
@@ -127,9 +125,9 @@ namespace Game
         {
             int totalScore = 0;
 
-            foreach (SearchDirectionEvent dir in directions)
+            foreach (SearchDirectionEvent dir in directions.AsSpan())
             {
-                foreach (Link link in Evaluation.Links)
+                foreach (Link link in Evaluation.Links.AsSpan())
                 {
                     //設置パターンが盤面外に出るようだったら飛ばす
                     if (!IsValidRange(y, x, link.Pattern.Length, dir))
